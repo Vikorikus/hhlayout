@@ -1,0 +1,28 @@
+.header {
+  height: 70px;
+  background-color: #fff;
+  border-bottom: 1px solid #e9ecef;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.link {
+  color: #868e96;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #4263eb;
+  }
+}
+
+.activeLink {
+  color: #000;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #4263eb;
+}
