@@ -12,6 +12,7 @@ const mockVacancy: Vacancy = {
   employer: { name: "Best Company" },
   area: { name: "Москва" },
   employment: { type: "Full-time" },
+  schedule: { name: "Удалённо" }, // ДОБАВЬ ЭТУ СТРОКУ
 };
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
