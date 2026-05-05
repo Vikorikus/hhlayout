@@ -3,9 +3,12 @@ import "./index.css";
 import App from "./App.tsx";
 import { Provider } from "react-redux";
 import { store } from "./components/Store/store.ts";
+import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
-    <App />
+    <BrowserRouter basename="/hhappclone">
+      <App />
+    </BrowserRouter>
   </Provider>,
 );

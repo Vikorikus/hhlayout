@@ -10,8 +10,9 @@ import { Header } from "./components/Header/Header";
 import { Filters } from "./components/Filters/Filters";
 import { VacancyList } from "./components/VacancyList/VacancyList";
 import { SearchBar } from "./components/SearchBar/SearchBar";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { VacancyPage } from "./components/VacancyPage/VacancyPage";
 
-// Темы по макету
 const theme = createTheme({
   primaryColor: "indigo",
   defaultRadius: "md",
@@ -38,18 +39,30 @@ export default function App() {
         <Header />
 
         <Container size="xl" py="xl">
-          <Stack gap="xl" mb="xl">
-            <SearchBar />
-          </Stack>
+          <Routes>
+            <Route
+              path="/vacancies"
+              element={
+                <>
+                  <Stack gap="xl" mb="xl">
+                    <SearchBar />
+                  </Stack>
+                  <Grid>
+                    <Grid.Col span={{ base: 12, md: 4 }}>
+                      <Filters />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, md: 8 }}>
+                      <VacancyList />
+                    </Grid.Col>
+                  </Grid>
+                </>
+              }
+            />
 
-          <Grid>
-            <Grid.Col span={{ base: 12, md: 4 }}>
-              <Filters />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <VacancyList />
-            </Grid.Col>
-          </Grid>
+            <Route path="/vacancies/:id" element={<VacancyPage />} />
+
+            <Route path="/" element={<Navigate to="/vacancies" replace />} />
+          </Routes>
         </Container>
       </div>
     </MantineProvider>

@@ -9,47 +9,55 @@ import {
   Select,
   Stack,
   Group,
+  Button,
 } from "@mantine/core";
-import { IconPlus, IconMapPin } from "@tabler/icons-react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchVacancies } from "../Store/Slices/vacancySlice";
-import type { AppDispatch, RootState } from "../Store/store";
+import { IconPlus, IconMapPin, IconTrash } from "@tabler/icons-react";
+import { useSearchParams } from "react-router-dom";
+import { areaMap } from "../../Types/areas";
 
 export const Filters = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { list } = useSelector((state: RootState) => state.vacancies);
+  const initialSkills = useMemo(() => {
+    const skillsFromUrl = searchParams.get("skills");
+    return skillsFromUrl ? skillsFromUrl.split(",") : ["js", "react", "ts"];
+  }, []);
 
-  const [skills, setSkills] = useState(["TypeScript", "React", "Redux"]);
+  const [skills, setSkills] = useState(initialSkills);
   const [currentSkill, setCurrentSkill] = useState("");
 
-  const [selectedCity, setSelectedCity] = useState<string | null>("Все города");
-
-  const areaMap: Record<string, string> = {
-    Москва: "1",
-    "Санкт-Петербург": "2",
-  };
+  const selectedCity = searchParams.get("city") || "Все города";
 
   const citiesForSelect = useMemo(() => {
-    const uniqueCities = Array.from(
-      new Set(list.map((v) => v.area?.name)),
-    ).filter(Boolean) as string[];
+    const mainCities = Object.keys(areaMap);
+    return ["Все города", ...mainCities];
+  }, []);
 
-    const basic = ["Все города", "Москва", "Санкт-Петербург"];
-    return Array.from(new Set([...basic, ...uniqueCities]));
-  }, [list]);
+  const updateUrl = (newSkills: string[], cityName: string | null) => {
+    const params = Object.fromEntries(searchParams);
 
-  const handleFilterChange = (updatedSkills: string[], city: string | null) => {
-    const areaId = city && areaMap[city] ? areaMap[city] : undefined;
+    if (newSkills.length > 0) {
+      params.skills = newSkills.join(",");
+    } else {
+      delete params.skills;
+    }
 
-    dispatch(
-      fetchVacancies({
-        text: "",
-        page: 0,
-        skill_set: updatedSkills,
-        area: areaId,
-      }),
-    );
+    if (!cityName || cityName === "Все города") {
+      delete params.city;
+    } else {
+      params.city = cityName;
+    }
+
+    setSearchParams(params);
+  };
+
+  const handleCityChange = (value: string | null) => {
+    const nextCity = value || "Все города";
+    updateUrl(skills, nextCity);
+  };
+
+  const handleResetCity = () => {
+    updateUrl(skills, "Все города");
   };
 
   const handleAddSkill = () => {
@@ -58,19 +66,14 @@ export const Filters = () => {
       const newSkills = [...skills, trimmed];
       setSkills(newSkills);
       setCurrentSkill("");
-      handleFilterChange(newSkills, selectedCity);
+      updateUrl(newSkills, selectedCity);
     }
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
     const newSkills = skills.filter((s) => s !== skillToRemove);
     setSkills(newSkills);
-    handleFilterChange(newSkills, selectedCity);
-  };
-
-  const handleCityChange = (value: string | null) => {
-    setSelectedCity(value);
-    handleFilterChange(skills, value);
+    updateUrl(newSkills, selectedCity);
   };
 
   return (
@@ -80,25 +83,29 @@ export const Filters = () => {
           <Text fw={600} size="sm">
             Ключевые навыки
           </Text>
-
-          <Group gap={8}>
-            <TextInput
-              placeholder="Навык"
-              value={currentSkill}
-              onChange={(e) => setCurrentSkill(e.currentTarget.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAddSkill()}
-              style={{ flex: 1 }}
-            />
-            <ActionIcon
-              variant="filled"
-              color="indigo.3"
-              size="lg"
-              onClick={handleAddSkill}
-            >
-              <IconPlus size={18} />
-            </ActionIcon>
-          </Group>
-
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAddSkill();
+            }}
+          >
+            <Group gap={8}>
+              <TextInput
+                placeholder="Навык"
+                value={currentSkill}
+                onChange={(e) => setCurrentSkill(e.currentTarget.value)}
+                style={{ flex: 1 }}
+              />
+              <ActionIcon
+                variant="filled"
+                color="indigo.3"
+                size="lg"
+                onClick={handleAddSkill}
+              >
+                <IconPlus size={18} />
+              </ActionIcon>
+            </Group>
+          </form>
           <PillsInput variant="unstyled">
             <Pill.Group>
               {skills.map((skill) => (
@@ -116,19 +123,31 @@ export const Filters = () => {
       </Paper>
 
       <Paper withBorder p="md" radius="md">
-        <Select
-          label={
-            <Text fw={600} size="sm" mb={5}>
-              Город
-            </Text>
-          }
-          leftSection={<IconMapPin size={16} />}
-          placeholder="Выберите город"
-          data={citiesForSelect}
-          value={selectedCity}
-          onChange={handleCityChange}
-          variant="default"
-        />
+        <Stack gap="sm">
+          <Select
+            label={
+              <Text fw={600} size="sm" mb={5}>
+                Город
+              </Text>
+            }
+            leftSection={<IconMapPin size={16} />}
+            placeholder="Выберите город"
+            data={citiesForSelect}
+            value={selectedCity}
+            onChange={handleCityChange}
+          />
+          {selectedCity !== "Все города" && (
+            <Button
+              variant="ghost"
+              color="gray"
+              size="xs"
+              leftSection={<IconTrash size={14} />}
+              onClick={handleResetCity}
+            >
+              Сбросить город
+            </Button>
+          )}
+        </Stack>
       </Paper>
     </Stack>
   );

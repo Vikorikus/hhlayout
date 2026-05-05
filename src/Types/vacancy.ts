@@ -29,4 +29,9 @@ export interface Vacancy {
   employment: Employment;
   schedule: Schedule;
   alternate_url?: string;
+  snippet?: Snippet;
+}
+export interface Snippet {
+  responsibility: string | null;
+  requirement: string | null;
 }

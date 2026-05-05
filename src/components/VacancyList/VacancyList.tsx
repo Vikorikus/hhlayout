@@ -1,20 +1,43 @@
+import { useEffect } from "react";
 import { Stack, Text, Loader, Center, Paper, Pagination } from "@mantine/core";
 import { useSelector, useDispatch } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import type { RootState, AppDispatch } from "../Store/store";
 import { fetchVacancies } from "../Store/Slices/vacancySlice";
 import { VacancyCard } from "../VacancyCard/VacancyCard";
+import { areaMap } from "../../Types/areas";
 
 export const VacancyList = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const [searchParams] = useSearchParams();
 
   const { list, loading, error, pages, page } = useSelector(
     (state: RootState) => state.vacancies,
   );
 
-  const handlePageChange = (newPage: number) => {
+  useEffect(() => {
+    const cityFromUrl = searchParams.get("city");
+    const text = searchParams.get("text") || "";
+    const skills = searchParams.get("skills")?.split(",") || [];
+
+    const areaId = cityFromUrl ? areaMap[cityFromUrl] : undefined;
+
     dispatch(
       fetchVacancies({
-        text: "",
+        text,
+        area: areaId,
+        skill_set: skills.length > 0 ? skills : undefined,
+        page: 0,
+      }),
+    );
+  }, [dispatch, searchParams]);
+
+  const handlePageChange = (newPage: number) => {
+    const text = searchParams.get("text") || "";
+
+    dispatch(
+      fetchVacancies({
+        text,
         page: newPage - 1,
       }),
     );
@@ -22,7 +45,7 @@ export const VacancyList = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (loading) {
+  if (loading && list.length === 0) {
     return (
       <Center mt="xl" style={{ minHeight: "200px" }}>
         <Stack align="center">
