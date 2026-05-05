@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Container,
   Paper,
@@ -10,24 +11,46 @@ import {
   Group,
   Badge,
   Anchor,
+  Loader,
+  Center,
 } from "@mantine/core";
 import { IconChevronLeft, IconExternalLink } from "@tabler/icons-react";
-import type { RootState } from "../Store/store";
+import { fetchVacancyById } from "../Store/Slices/vacancySlice";
+import type { RootState, AppDispatch } from "../Store/store";
 
 export const VacancyPage = () => {
   const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const vacancy = useSelector((state: RootState) =>
-    state.vacancies.list.find((v) => v.id === id),
-  );
+  const { list, loading } = useSelector((state: RootState) => state.vacancies);
+
+  const vacancy = list.find((v) => v.id === id);
+
+  useEffect(() => {
+    if (!vacancy && id) {
+      dispatch(fetchVacancyById(id));
+    }
+  }, [dispatch, id, vacancy]);
+
+  if (loading && !vacancy) {
+    return (
+      <Center style={{ height: "50vh" }}>
+        <Loader size="xl" />
+      </Center>
+    );
+  }
 
   if (!vacancy) {
     return (
       <Container size="md" py="xl">
-        <Text>Вакансия не найдена. Попробуйте вернуться к списку.</Text>
-        <Anchor component={Link} to="/">
-          Назад к поиску
-        </Anchor>
+        <Stack align="center" gap="md">
+          <Text size="lg" fw={500}>
+            Вакансия не найдена. Попробуйте вернуться к списку.
+          </Text>
+          <Button component={Link} to="/" variant="light">
+            Назад к поиску
+          </Button>
+        </Stack>
       </Container>
     );
   }
@@ -40,7 +63,7 @@ export const VacancyPage = () => {
         size="sm"
         c="dimmed"
         mb="md"
-        style={{ display: "flex", alignItems: "center" }}
+        style={{ display: "flex", alignItems: "center", gap: "4px" }}
       >
         <IconChevronLeft size={16} /> Назад к списку
       </Anchor>
@@ -81,7 +104,6 @@ export const VacancyPage = () => {
               mt="lg"
               color="dark"
               radius="md"
-              fullWidth={false}
               style={{ alignSelf: "flex-start" }}
               rightSection={<IconExternalLink size={16} />}
             >

@@ -34,7 +34,6 @@ export const fetchVacancies = createAsyncThunk(
   "vacancies/fetchAll",
   async (arg: FetchVacanciesArgs, { rejectWithValue }) => {
     try {
-      // для мока задержка типа грузится с api hh
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       let filteredItems = [...mockVacanciesResponse.items];
@@ -83,6 +82,25 @@ export const fetchVacancies = createAsyncThunk(
   },
 );
 
+export const fetchVacancyById = createAsyncThunk(
+  "vacancies/fetchById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      const vacancy = mockVacanciesResponse.items.find((v) => v.id === id);
+
+      if (!vacancy) {
+        return rejectWithValue("Вакансия не найдена");
+      }
+
+      return vacancy;
+    } catch (error) {
+      return rejectWithValue("Ошибка при получении вакансии");
+    }
+  },
+);
+
 const VacancySlice = createSlice({
   name: "vacancies",
   initialState,
@@ -93,6 +111,7 @@ const VacancySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
       .addCase(fetchVacancies.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -107,6 +126,23 @@ const VacancySlice = createSlice({
       .addCase(fetchVacancies.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Произошла ошибка";
+      })
+
+      .addCase(fetchVacancyById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchVacancyById.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const exists = state.list.find((v) => v.id === action.payload.id);
+        if (!exists) {
+          state.list.push(action.payload as unknown as Vacancy);
+        }
+      })
+      .addCase(fetchVacancyById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Ошибка загрузки вакансии";
       });
   },
 });
