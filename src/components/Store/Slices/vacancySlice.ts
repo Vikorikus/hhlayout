@@ -38,8 +38,9 @@ export const fetchVacancies = createAsyncThunk(
 
       let filteredItems = [...mockVacanciesResponse.items];
 
+      // 1. Поиск по тексту (название вакансии или компания)
       if (arg.text) {
-        const query = arg.text.toLowerCase();
+        const query = arg.text.toLowerCase().trim();
         filteredItems = filteredItems.filter(
           (v) =>
             v.name.toLowerCase().includes(query) ||
@@ -47,6 +48,7 @@ export const fetchVacancies = createAsyncThunk(
         );
       }
 
+      // 2. Фильтр по региону (Tabs/Select)
       if (arg.area) {
         filteredItems = filteredItems.filter((v) => {
           if (arg.area === "1") return v.area?.name === "Москва";
@@ -55,25 +57,42 @@ export const fetchVacancies = createAsyncThunk(
         });
       }
 
+      // 3. СТРОГИЙ ФИЛЬТР ПО НАВЫКАМ (Исправляет "Абракадабру" и "Данные не исчезают")
       if (arg.skill_set && arg.skill_set.length > 0) {
-        filteredItems = filteredItems.filter((v) =>
-          arg.skill_set?.some((skill) =>
-            v.snippet?.requirement?.toLowerCase().includes(skill.toLowerCase()),
-          ),
-        );
+        filteredItems = filteredItems.filter((v) => {
+          const requirement = (v.snippet?.requirement || "").toLowerCase();
+
+          // Проверяем, что КАЖДЫЙ выбранный навык есть в описании вакансии
+          return arg.skill_set!.every((skill) => {
+            const s = skill.toLowerCase().trim();
+
+            // "Умная" проверка для JS: чтобы JavaScript и JS считались одним и тем же
+            if (s === "js" || s === "javascript") {
+              return (
+                requirement.includes("javascript") || requirement.includes("js")
+              );
+            }
+
+            return requirement.includes(s);
+          });
+        });
       }
 
+      // 4. Пагинация и защита от пустых страниц
       const perPage = 10;
       const totalFound = filteredItems.length;
-      const totalPages = Math.ceil(totalFound / perPage);
+      const totalPages = Math.ceil(totalFound / perPage) || 1;
 
-      const offset = arg.page * perPage;
+      // Если после фильтрации страница оказалась за пределами диапазона - сбрасываем на 0
+      const actualPage = arg.page >= totalPages ? 0 : arg.page;
+
+      const offset = actualPage * perPage;
       const paginatedItems = filteredItems.slice(offset, offset + perPage);
 
       return {
         items: paginatedItems,
         found: totalFound,
-        page: arg.page,
+        page: actualPage,
         pages: totalPages,
       };
     } catch (error) {
@@ -88,6 +107,7 @@ export const fetchVacancyById = createAsyncThunk(
     try {
       await new Promise((resolve) => setTimeout(resolve, 400));
 
+      // Находим вакансию в моках. Важно: ID в моках теперь стабильны.
       const vacancy = mockVacanciesResponse.items.find((v) => v.id === id);
 
       if (!vacancy) {
@@ -111,7 +131,6 @@ const VacancySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-
       .addCase(fetchVacancies.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -127,14 +146,13 @@ const VacancySlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) || "Произошла ошибка";
       })
-
       .addCase(fetchVacancyById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchVacancyById.fulfilled, (state, action) => {
         state.loading = false;
-
+        // Если вакансии нет в текущем списке (например, после F5), добавляем её
         const exists = state.list.find((v) => v.id === action.payload.id);
         if (!exists) {
           state.list.push(action.payload as unknown as Vacancy);

@@ -33,8 +33,6 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
     return { backgroundColor: "#F1F3F5", color: "#495057" };
   };
 
-  // 2. Ссылка с учетом ID.
-  // Если в BrowserRouter прописан basename="/hhappclone", то пишем просто "/vacancies/..."
   const internalLink = `/vacancies/${vacancy.id}`;
 
   return (
@@ -60,7 +58,7 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
           <Text fw={700} size="18px">
             {renderSalary()}
           </Text>
-          {/* Добавили ? чтобы не упало если experience undefined */}
+
           <Text size="16px" c="dimmed">
             {vacancy.experience?.name ?? "Опыт не указан"}
           </Text>
