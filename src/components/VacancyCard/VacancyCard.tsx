@@ -1,17 +1,28 @@
 import { Paper, Text, Group, Button, Badge, Stack } from "@mantine/core";
 import type { Vacancy } from "../../Types/vacancy";
-import { Link } from "react-router-dom"; // Импортируем Link
+import { Link } from "react-router-dom";
 
 interface VacancyCardProps {
   vacancy: Vacancy;
 }
 
 export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
-  const salaryText = vacancy.salary
-    ? `${vacancy.salary.from?.toLocaleString() ?? ""} – ${vacancy.salary.to?.toLocaleString() ?? ""} ₽`
-    : "Зарплата не указана";
+  // 1. Улучшенная логика отображения зарплаты (с проверками на null)
+  const renderSalary = () => {
+    if (!vacancy.salary) return "Зарплата не указана";
 
-  const getBadgeStyle = (type: string) => {
+    const { from, to, currency } = vacancy.salary;
+    const curr = currency === "RUR" ? "₽" : currency;
+
+    if (from && to)
+      return `${from.toLocaleString()} – ${to.toLocaleString()} ${curr}`;
+    if (from) return `от ${from.toLocaleString()} ${curr}`;
+    if (to) return `до ${to.toLocaleString()} ${curr}`;
+
+    return "Зарплата не указана";
+  };
+
+  const getBadgeStyle = (type: string = "") => {
     const t = type.toLowerCase();
     if (t.includes("удалён") || t.includes("удален") || t.includes("remote")) {
       return { backgroundColor: "#4263EB", color: "#FFFFFF" };
@@ -22,13 +33,16 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
     return { backgroundColor: "#F1F3F5", color: "#495057" };
   };
 
+  // 2. Ссылка с учетом ID.
+  // Если в BrowserRouter прописан basename="/hhappclone", то пишем просто "/vacancies/..."
+  const internalLink = `/vacancies/${vacancy.id}`;
+
   return (
     <Paper withBorder p={24} radius={12} bg="white" style={{ width: "100%" }}>
       <Stack gap={12} align="flex-start">
-        {/* Делаем название вакансии ссылкой */}
         <Text
           component={Link}
-          to={`/vacancies/${vacancy.id}`} // Переход на страницу по ID
+          to={internalLink}
           fw={700}
           size="24px"
           c="indigo.6"
@@ -36,7 +50,7 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
             cursor: "pointer",
             lineHeight: 1.2,
             textAlign: "left",
-            textDecoration: "none", // Убираем стандартное подчеркивание ссылки
+            textDecoration: "none",
           }}
         >
           {vacancy.name}
@@ -44,18 +58,19 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
 
         <Group gap={12} align="center">
           <Text fw={700} size="18px">
-            {salaryText}
+            {renderSalary()}
           </Text>
+          {/* Добавили ? чтобы не упало если experience undefined */}
           <Text size="16px" c="dimmed">
-            {vacancy.experience?.name}
+            {vacancy.experience?.name ?? "Опыт не указан"}
           </Text>
         </Group>
 
         <Stack gap={4} align="flex-start">
           <Text fw={500} size="16px" c="gray.6">
-            {vacancy.employer?.name}
+            {vacancy.employer?.name ?? "Компания не указана"}
           </Text>
-          {vacancy.schedule && (
+          {vacancy.schedule?.name && (
             <Badge
               variant="filled"
               radius="4px"
@@ -70,14 +85,13 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
         </Stack>
 
         <Text size="18px" fw={400} style={{ textAlign: "left" }}>
-          {vacancy.area?.name}
+          {vacancy.area?.name ?? "Город не указан"}
         </Text>
 
         <Group mt={12} gap="md">
-          {/* Кнопка теперь ведет на внутреннюю страницу вакансии */}
           <Button
             component={Link}
-            to={`/vacancies/${vacancy.id}`}
+            to={internalLink}
             color="dark.8"
             radius="8px"
             h={42}
@@ -100,8 +114,9 @@ export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
               vacancy.alternate_url || `https://hh.ru/vacancy/${vacancy.id}`
             }
             target="_blank"
+            rel="noopener noreferrer"
           >
-            Откликнуться
+            Откликнуться на HH
           </Button>
         </Group>
       </Stack>
