@@ -4,23 +4,16 @@
     <meta charset="utf-8" />
     <title>HH App Clone</title>
     <script type="text/javascript">
-      var pathSegmentsToKeep = 1; // для vikorikus.github.io/hhappclone/ это 1
+      // Эта часть берет текущий путь и превращает его в строку запроса
       var l = window.location;
+      // hhappclone — это твой basename
       l.replace(
         l.protocol +
           "//" +
           l.hostname +
           (l.port ? ":" + l.port : "") +
-          l.pathname
-            .split("/")
-            .slice(0, 1 + pathSegmentsToKeep)
-            .join("/") +
-          "/?p=/" +
-          l.pathname
-            .split("/")
-            .slice(1 + pathSegmentsToKeep)
-            .join("/")
-            .replace(/&/g, "~and~") +
+          "/hhappclone/?p=" +
+          l.pathname.replace("/hhappclone/", "").replace(/&/g, "~and~") +
           (l.search ? "&" + l.search.replace(/&/g, "~and~") : "") +
           l.hash,
       );
