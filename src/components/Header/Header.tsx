@@ -1,5 +1,6 @@
 import { Container, Group, Text, UnstyledButton } from "@mantine/core";
 import { IconUserCircle } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
 import classes from "./Header.module.scss";
 
 export const Header = () => {
@@ -7,17 +8,27 @@ export const Header = () => {
     <header className={classes.header}>
       <Container size="xl" h="100%">
         <Group justify="space-between" h="100%">
-          <Group gap={4}>
-            <Text fw={900} size="xl" c="red.6" style={{ letterSpacing: -1 }}>
-              hh
-            </Text>
-            <Text fw={700} size="lg">
-              .FrontEnd
-            </Text>
-          </Group>
+          <UnstyledButton
+            component={Link}
+            to="/vacancies"
+            className={classes.logoButton}
+          >
+            <Group gap={4}>
+              <Text fw={900} size="xl" c="red.6" style={{ letterSpacing: -1 }}>
+                hh
+              </Text>
+              <Text fw={700} size="lg">
+                .FrontEnd
+              </Text>
+            </Group>
+          </UnstyledButton>
 
           <Group gap="xl">
-            <UnstyledButton className={classes.activeLink}>
+            <UnstyledButton
+              component={Link}
+              to="/vacancies"
+              className={classes.activeLink}
+            >
               <Group gap={6}>
                 <Text fw={600} size="sm">
                   Вакансии FE

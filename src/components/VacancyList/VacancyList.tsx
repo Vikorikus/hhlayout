@@ -9,7 +9,7 @@ import { areaMap } from "../../Types/areas";
 
 export const VacancyList = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { list, loading, error, pages, page } = useSelector(
     (state: RootState) => state.vacancies,
@@ -17,30 +17,28 @@ export const VacancyList = () => {
 
   useEffect(() => {
     const cityFromUrl = searchParams.get("city");
-    const text = searchParams.get("text") || "";
-    const skills = searchParams.get("skills")?.split(",") || [];
+    const textFromUrl = searchParams.get("text") || "";
+    const skillsParam = searchParams.get("skills");
+    const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
 
+    const skills = skillsParam ? skillsParam.split(",") : undefined;
     const areaId = cityFromUrl ? areaMap[cityFromUrl] : undefined;
 
     dispatch(
       fetchVacancies({
-        text,
+        text: textFromUrl,
         area: areaId,
-        skill_set: skills.length > 0 ? skills : undefined,
-        page: 0,
+        skill_set: skills,
+        page: pageFromUrl - 1,
       }),
     );
   }, [dispatch, searchParams]);
 
   const handlePageChange = (newPage: number) => {
-    const text = searchParams.get("text") || "";
+    const nextParams = new URLSearchParams(searchParams);
 
-    dispatch(
-      fetchVacancies({
-        text,
-        page: newPage - 1,
-      }),
-    );
+    nextParams.set("page", newPage.toString());
+    setSearchParams(nextParams, { replace: true });
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -51,7 +49,7 @@ export const VacancyList = () => {
         <Stack align="center">
           <Loader size="lg" color="indigo" />
           <Text size="xl" fw={500} c="dimmed">
-            Поиск подходящих вакансий...
+            Загрузка вакансий...
           </Text>
         </Stack>
       </Center>
@@ -61,9 +59,17 @@ export const VacancyList = () => {
   if (error) {
     return (
       <Center mt="xl">
-        <Paper p="xl" withBorder radius="md" bg="red.0">
-          <Text c="red.9" fw={700}>
-            Ошибка при загрузке: {error}
+        <Paper
+          p="xl"
+          withBorder
+          radius="md"
+          bg="red.0"
+          style={{ maxWidth: 500 }}
+        >
+          <Text c="red.9" fw={700} ta="center">
+            Ошибка при загрузке данных:
+            <br />
+            {error}
           </Text>
         </Paper>
       </Center>
@@ -73,30 +79,34 @@ export const VacancyList = () => {
   return (
     <Stack gap="md">
       {list.length > 0 ? (
-        list.map((vacancy) => (
-          <VacancyCard key={vacancy.id} vacancy={vacancy} />
-        ))
-      ) : (
-        <Paper p="xl" withBorder radius="md">
-          <Center>
-            <Text c="dimmed">
-              Вакансий не найдено. Попробуйте изменить параметры фильтров.
-            </Text>
-          </Center>
-        </Paper>
-      )}
+        <>
+          {list.map((vacancy) => (
+            <VacancyCard key={vacancy.id} vacancy={vacancy} />
+          ))}
 
-      {list.length > 0 && pages > 1 && (
-        <Center mt="lg" pb="xl">
-          <Pagination
-            total={pages}
-            value={page + 1}
-            onChange={handlePageChange}
-            color="indigo.6"
-            radius="md"
-            withEdges={false}
-          />
-        </Center>
+          {pages > 1 && (
+            <Center mt="lg" pb="xl">
+              <Pagination
+                total={pages}
+                value={page + 1}
+                onChange={handlePageChange}
+                color="indigo.6"
+                radius="md"
+                withEdges={false}
+              />
+            </Center>
+          )}
+        </>
+      ) : (
+        !loading && (
+          <Paper p="xl" withBorder radius="md">
+            <Center>
+              <Text c="dimmed">
+                Вакансий не найдено. Попробуйте изменить параметры фильтров.
+              </Text>
+            </Center>
+          </Paper>
+        )
       )}
     </Stack>
   );

@@ -1,40 +1,32 @@
 import { Title, Text, Group, TextInput, Button, Stack } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { fetchVacancies } from "../Store/Slices/vacancySlice";
-import type { AppDispatch } from "../Store/store";
-import { useSearchParams } from "react-router-dom"; // Импортируем хук
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export const SearchBar = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // 1. Инициализируем стейт значением из URL (обратная синхронизация)
   const [query, setQuery] = useState(searchParams.get("text") || "");
+
+  useEffect(() => {
+    setQuery(searchParams.get("text") || "");
+  }, [searchParams]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 2. Обновляем URL (прямая синхронизация)
-    const params = Object.fromEntries(searchParams);
-    if (query.trim()) {
-      params.text = query;
-    } else {
-      delete params.text;
-    }
-    setSearchParams(params);
+    const params = new URLSearchParams(searchParams);
 
-    // 3. Отправляем запрос, подхватывая остальные фильтры из URL
-    dispatch(
-      fetchVacancies({
-        text: query,
-        page: 0,
-        // Не забываем про навыки и город, если они уже есть в URL
-        area: params.city,
-        skill_set: params.skills ? params.skills.split(",") : [],
-      }),
-    );
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      params.set("text", trimmedQuery);
+    } else {
+      params.delete("text");
+    }
+
+    params.delete("page");
+
+    setSearchParams(params, { replace: true });
   };
 
   return (

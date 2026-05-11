@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Paper,
   Text,
@@ -20,11 +20,16 @@ export const Filters = () => {
 
   const initialSkills = useMemo(() => {
     const skillsFromUrl = searchParams.get("skills");
-    return skillsFromUrl ? skillsFromUrl.split(",") : ["js", "react", "ts"];
+    return skillsFromUrl ? skillsFromUrl.split(",") : [];
   }, []);
 
   const [skills, setSkills] = useState(initialSkills);
   const [currentSkill, setCurrentSkill] = useState("");
+
+  useEffect(() => {
+    const skillsFromUrl = searchParams.get("skills");
+    setSkills(skillsFromUrl ? skillsFromUrl.split(",") : []);
+  }, [searchParams]);
 
   const selectedCity = searchParams.get("city") || "Все города";
 
@@ -34,21 +39,23 @@ export const Filters = () => {
   }, []);
 
   const updateUrl = (newSkills: string[], cityName: string | null) => {
-    const params = Object.fromEntries(searchParams);
+    const params = new URLSearchParams(searchParams);
 
     if (newSkills.length > 0) {
-      params.skills = newSkills.join(",");
+      params.set("skills", newSkills.join(","));
     } else {
-      delete params.skills;
+      params.delete("skills");
     }
 
     if (!cityName || cityName === "Все города") {
-      delete params.city;
+      params.delete("city");
     } else {
-      params.city = cityName;
+      params.set("city", cityName);
     }
 
-    setSearchParams(params);
+    params.delete("page");
+
+    setSearchParams(params, { replace: true });
   };
 
   const handleCityChange = (value: string | null) => {
@@ -61,7 +68,7 @@ export const Filters = () => {
   };
 
   const handleAddSkill = () => {
-    const trimmed = currentSkill.trim();
+    const trimmed = currentSkill.trim().toLowerCase();
     if (trimmed && !skills.includes(trimmed)) {
       const newSkills = [...skills, trimmed];
       setSkills(newSkills);
@@ -91,14 +98,14 @@ export const Filters = () => {
           >
             <Group gap={8}>
               <TextInput
-                placeholder="Навык"
+                placeholder="Например: react"
                 value={currentSkill}
                 onChange={(e) => setCurrentSkill(e.currentTarget.value)}
                 style={{ flex: 1 }}
               />
               <ActionIcon
                 variant="filled"
-                color="indigo.3"
+                color="indigo.6"
                 size="lg"
                 onClick={handleAddSkill}
               >
@@ -106,6 +113,7 @@ export const Filters = () => {
               </ActionIcon>
             </Group>
           </form>
+
           <PillsInput variant="unstyled">
             <Pill.Group>
               {skills.map((skill) => (
@@ -138,7 +146,7 @@ export const Filters = () => {
           />
           {selectedCity !== "Все города" && (
             <Button
-              variant="ghost"
+              variant="light"
               color="gray"
               size="xs"
               leftSection={<IconTrash size={14} />}

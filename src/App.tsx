@@ -41,7 +41,7 @@ export default function App() {
         <Container size="xl" py="xl">
           <Routes>
             <Route
-              path="/vacancies"
+              path="vacancies"
               element={
                 <>
                   <Stack gap="xl" mb="xl">
@@ -59,9 +59,9 @@ export default function App() {
               }
             />
 
-            <Route path="/vacancies/:id" element={<VacancyPage />} />
+            <Route path="vacancies/:id" element={<VacancyPage />} />
 
-            <Route path="/" element={<Navigate to="/vacancies" replace />} />
+            <Route path="/" element={<Navigate to="vacancies" replace />} />
           </Routes>
         </Container>
       </div>
