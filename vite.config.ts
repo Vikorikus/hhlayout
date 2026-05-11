@@ -12,7 +12,7 @@ const vitestConfig: VitestUserConfigInterface = {
 };
 
 export default defineConfig({
-  base: "/hhappclone/",
+  base: "/hhroutes/",
   plugins: [react()],
   ...vitestConfig,
 });
