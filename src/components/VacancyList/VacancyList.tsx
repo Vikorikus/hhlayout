@@ -1,28 +1,47 @@
 import { useEffect } from "react";
-import { Stack, Text, Loader, Center, Paper, Pagination } from "@mantine/core";
+import {
+  Stack,
+  Text,
+  Loader,
+  Center,
+  Paper,
+  Pagination,
+  Tabs,
+} from "@mantine/core";
 import { useSelector, useDispatch } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import type { RootState, AppDispatch } from "../Store/store";
 import { fetchVacancies } from "../Store/Slices/vacancySlice";
 import { VacancyCard } from "../VacancyCard/VacancyCard";
 import { areaMap } from "../../Types/areas";
+import { NotFoundPage } from "../NotFoundPage/NotFoundPage";
 
 export const VacancyList = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const { city } = useParams<{ city: string }>();
+
+  const VALID_CITIES = ["moscow", "petersburg"];
 
   const { list, loading, error, pages, page } = useSelector(
     (state: RootState) => state.vacancies,
   );
 
   useEffect(() => {
-    const cityFromUrl = searchParams.get("city");
+    if (city && !VALID_CITIES.includes(city)) return;
+
+    const currentCity = city || "moscow";
     const textFromUrl = searchParams.get("text") || "";
     const skillsParam = searchParams.get("skills");
+
     const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
 
     const skills = skillsParam ? skillsParam.split(",") : undefined;
-    const areaId = cityFromUrl ? areaMap[cityFromUrl] : undefined;
+
+    const areaId =
+      areaMap[currentCity === "moscow" ? "Москва" : "Санкт-Петербург"];
 
     dispatch(
       fetchVacancies({
@@ -32,16 +51,38 @@ export const VacancyList = () => {
         page: pageFromUrl - 1,
       }),
     );
-  }, [dispatch, searchParams]);
+  }, [dispatch, searchParams, city]);
 
   const handlePageChange = (newPage: number) => {
     const nextParams = new URLSearchParams(searchParams);
 
-    nextParams.set("page", newPage.toString());
-    setSearchParams(nextParams, { replace: true });
+    if (newPage > 1) {
+      nextParams.set("page", newPage.toString());
+    } else {
+      nextParams.delete("page");
+    }
+
+    setSearchParams(nextParams);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const handleTabChange = (value: string | null) => {
+    if (!value) return;
+
+    const nextParams = new URLSearchParams(searchParams);
+
+    nextParams.delete("page");
+
+    navigate({
+      pathname: `/vacancies/${value}`,
+      search: nextParams.toString(),
+    });
+  };
+
+  if (city && !VALID_CITIES.includes(city)) {
+    return <NotFoundPage />;
+  }
 
   if (loading && list.length === 0) {
     return (
@@ -56,29 +97,39 @@ export const VacancyList = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Center mt="xl">
-        <Paper
-          p="xl"
-          withBorder
-          radius="md"
-          bg="red.0"
-          style={{ maxWidth: 500 }}
-        >
-          <Text c="red.9" fw={700} ta="center">
-            Ошибка при загрузке данных:
-            <br />
-            {error}
-          </Text>
-        </Paper>
-      </Center>
-    );
-  }
-
   return (
     <Stack gap="md">
-      {list.length > 0 ? (
+      <Tabs
+        value={city || "moscow"}
+        onChange={handleTabChange}
+        color="indigo.6"
+        variant="default"
+      >
+        <Tabs.List mb="md" style={{ borderBottomWidth: "2px" }}>
+          <Tabs.Tab value="moscow" p="md" fw={500}>
+            Москва
+          </Tabs.Tab>
+          <Tabs.Tab value="petersburg" p="md" fw={500}>
+            Санкт-Петербург
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+
+      {error ? (
+        <Center mt="xl">
+          <Paper
+            p="xl"
+            withBorder
+            radius="md"
+            bg="red.0"
+            style={{ maxWidth: 500 }}
+          >
+            <Text c="red.9" fw={700} ta="center">
+              Ошибка: {error}
+            </Text>
+          </Paper>
+        </Center>
+      ) : list.length > 0 ? (
         <>
           {list.map((vacancy) => (
             <VacancyCard key={vacancy.id} vacancy={vacancy} />
@@ -92,7 +143,6 @@ export const VacancyList = () => {
                 onChange={handlePageChange}
                 color="indigo.6"
                 radius="md"
-                withEdges={false}
               />
             </Center>
           )}
@@ -102,7 +152,7 @@ export const VacancyList = () => {
           <Paper p="xl" withBorder radius="md">
             <Center>
               <Text c="dimmed">
-                Вакансий не найдено. Попробуйте изменить параметры фильтров.
+                Вакансий не найдено. Попробуйте изменить параметры поиска.
               </Text>
             </Center>
           </Paper>

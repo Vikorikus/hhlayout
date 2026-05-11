@@ -7,7 +7,6 @@ interface VacancyCardProps {
 }
 
 export const VacancyCard = ({ vacancy }: VacancyCardProps) => {
-  // 1. Улучшенная логика отображения зарплаты (с проверками на null)
   const renderSalary = () => {
     if (!vacancy.salary) return "Зарплата не указана";
 

@@ -6,14 +6,11 @@ import {
   ActionIcon,
   PillsInput,
   Pill,
-  Select,
   Stack,
   Group,
-  Button,
 } from "@mantine/core";
-import { IconPlus, IconMapPin, IconTrash } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import { useSearchParams } from "react-router-dom";
-import { areaMap } from "../../Types/areas";
 
 export const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,14 +28,7 @@ export const Filters = () => {
     setSkills(skillsFromUrl ? skillsFromUrl.split(",") : []);
   }, [searchParams]);
 
-  const selectedCity = searchParams.get("city") || "Все города";
-
-  const citiesForSelect = useMemo(() => {
-    const mainCities = Object.keys(areaMap);
-    return ["Все города", ...mainCities];
-  }, []);
-
-  const updateUrl = (newSkills: string[], cityName: string | null) => {
+  const updateUrl = (newSkills: string[]) => {
     const params = new URLSearchParams(searchParams);
 
     if (newSkills.length > 0) {
@@ -47,24 +37,9 @@ export const Filters = () => {
       params.delete("skills");
     }
 
-    if (!cityName || cityName === "Все города") {
-      params.delete("city");
-    } else {
-      params.set("city", cityName);
-    }
-
     params.delete("page");
 
     setSearchParams(params, { replace: true });
-  };
-
-  const handleCityChange = (value: string | null) => {
-    const nextCity = value || "Все города";
-    updateUrl(skills, nextCity);
-  };
-
-  const handleResetCity = () => {
-    updateUrl(skills, "Все города");
   };
 
   const handleAddSkill = () => {
@@ -73,14 +48,14 @@ export const Filters = () => {
       const newSkills = [...skills, trimmed];
       setSkills(newSkills);
       setCurrentSkill("");
-      updateUrl(newSkills, selectedCity);
+      updateUrl(newSkills);
     }
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
     const newSkills = skills.filter((s) => s !== skillToRemove);
     setSkills(newSkills);
-    updateUrl(newSkills, selectedCity);
+    updateUrl(newSkills);
   };
 
   return (
@@ -127,34 +102,6 @@ export const Filters = () => {
               ))}
             </Pill.Group>
           </PillsInput>
-        </Stack>
-      </Paper>
-
-      <Paper withBorder p="md" radius="md">
-        <Stack gap="sm">
-          <Select
-            label={
-              <Text fw={600} size="sm" mb={5}>
-                Город
-              </Text>
-            }
-            leftSection={<IconMapPin size={16} />}
-            placeholder="Выберите город"
-            data={citiesForSelect}
-            value={selectedCity}
-            onChange={handleCityChange}
-          />
-          {selectedCity !== "Все города" && (
-            <Button
-              variant="light"
-              color="gray"
-              size="xs"
-              leftSection={<IconTrash size={14} />}
-              onClick={handleResetCity}
-            >
-              Сбросить город
-            </Button>
-          )}
         </Stack>
       </Paper>
     </Stack>

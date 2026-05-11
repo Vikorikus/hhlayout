@@ -47,16 +47,15 @@ export const fetchVacancies = createAsyncThunk(
         );
       }
 
-      const isFilterActive =
-        arg.area && arg.area !== "all" && arg.area !== "0" && arg.area !== "";
-
-      if (isFilterActive) {
+      if (arg.area) {
         filteredItems = filteredItems.filter((v) => {
           const cityName = v.area?.name?.trim();
-          if (arg.area === "1" || arg.area === "moscow")
+          if (arg.area === "1" || arg.area === "moscow") {
             return cityName === "Москва";
-          if (arg.area === "2" || arg.area === "petersburg")
+          }
+          if (arg.area === "2" || arg.area === "petersburg") {
             return cityName === "Санкт-Петербург";
+          }
           return true;
         });
       }
@@ -121,6 +120,7 @@ const VacancySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
       .addCase(fetchVacancies.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -136,12 +136,14 @@ const VacancySlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) || "Произошла ошибка";
       })
+
       .addCase(fetchVacancyById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchVacancyById.fulfilled, (state, action) => {
         state.loading = false;
+
         const exists = state.list.find((v) => v.id === action.payload.id);
         if (!exists) state.list.push(action.payload as unknown as Vacancy);
       })

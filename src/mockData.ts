@@ -1,5 +1,3 @@
-// src/mockData.ts
-
 export interface MockVacancy {
   id: string;
   name: string;
@@ -39,13 +37,7 @@ const companies = [
   "Точно Стрельнет",
 ];
 
-const areas = [
-  "Москва",
-  "Санкт-Петербург",
-  "Екатеринбург",
-  "Новосибирск",
-  "Казань",
-];
+const targetAreas = ["Москва", "Санкт-Петербург"];
 
 const schedules = ["можно удалённо", "офис", "гибрид"];
 
@@ -58,13 +50,12 @@ const experiences = [
 
 export const mockVacanciesResponse = {
   items: [
-    // Фиксированные первые 3 вакансии
     {
       id: "1",
       name: "Frontend разработчик в EdTech продукт",
       employer: { name: "Kata Academy" },
       salary: { from: 80000, to: 170000, currency: "RUR" },
-      area: { name: "Набережные Челны" },
+      area: { name: "Москва" },
       snippet: {
         requirement:
           "Опыт работы с React и JavaScript. Понимание современных методологий.",
@@ -78,7 +69,7 @@ export const mockVacanciesResponse = {
       name: "Frontend разработчик в казино",
       employer: { name: "777" },
       salary: { from: 30000, to: 970000, currency: "RUR" },
-      area: { name: "Уфа" },
+      area: { name: "Санкт-Петербург" },
       snippet: {
         requirement: "JavaScript, анимации, работа с Canvas.",
         responsibility: "Создание захватывающих игровых интерфейсов.",
@@ -91,7 +82,7 @@ export const mockVacanciesResponse = {
       name: "Frontend разработчик в стартап",
       employer: { name: "Точно Стрельнет" },
       salary: { from: 15000, to: 20000, currency: "RUR" },
-      area: { name: "Замоскворечье" },
+      area: { name: "Москва" },
       snippet: {
         requirement: "TypeScript, React, желание быстро учиться.",
         responsibility: "Верстка лендингов и логики приложения.",
@@ -99,20 +90,18 @@ export const mockVacanciesResponse = {
       experience: { name: "Без опыта" },
       schedule: { name: "гибрид" },
     },
-    // Генерируем остальные 27 вакансий БЕЗ рандома
-    ...Array.from({ length: 27 }).map((_, i) => {
+
+    ...Array.from({ length: 57 }).map((_, i) => {
       const id = (i + 4).toString();
 
-      // Используем остаток от деления (%), чтобы детерминировано выбирать значения из массивов
       const role = roles[i % roles.length];
       const company = companies[i % companies.length];
-      const area = areas[i % areas.length];
+      const area = targetAreas[i % targetAreas.length];
       const skill = skillsPool[i % skillsPool.length];
       const schedule = schedules[i % schedules.length];
       const exp = experiences[i % experiences.length];
 
-      // Зарплата тоже фиксированная для каждого ID
-      const salaryFrom = 50000 + i * 5000;
+      const salaryFrom = 50000 + i * 2000;
 
       return {
         id,
@@ -129,8 +118,8 @@ export const mockVacanciesResponse = {
       };
     }),
   ],
-  found: 30,
-  pages: 3,
+  found: 60,
+  pages: 6,
   page: 0,
   per_page: 10,
 };
