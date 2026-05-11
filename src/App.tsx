@@ -61,7 +61,7 @@ export default function App() {
 
             <Route path="vacancies/:id" element={<VacancyPage />} />
 
-            <Route path="/" element={<Navigate to="vacancies" replace />} />
+            {/* <Route path="/" element={<Navigate to="vacancies" replace />} /> */}
           </Routes>
         </Container>
       </div>

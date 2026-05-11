@@ -2,25 +2,20 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>hh-clone</title>
     <script type="text/javascript">
-      // Скрипт превращает путь в параметр запроса
       var l = window.location;
+      // Собираем всё: путь + поиск + хеш
+      var path = l.pathname.split("/").slice(2).join("/"); // убираем /hhappclone/
+      var search = l.search ? l.search.replace(/&/g, "~and~") : "";
+      var query = "?p=/" + path + search + l.hash;
+
       l.replace(
         l.protocol +
           "//" +
           l.hostname +
           (l.port ? ":" + l.port : "") +
-          l.pathname.split("/").slice(0, 2).join("/") +
-          "/?p=/" +
-          l.pathname
-            .slice(1)
-            .split("/")
-            .slice(1)
-            .join("/")
-            .replace(/&/g, "~and~") +
-          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
-          l.hash,
+          "/hhappclone/" +
+          query,
       );
     </script>
   </head>
