@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <script type="text/javascript">
       var l = window.location;
-      // Собираем всё: путь + поиск + хеш
-      var path = l.pathname.split("/").slice(2).join("/"); // убираем /hhappclone/
+
+      var path = l.pathname.split("/").slice(2).join("/");
       var search = l.search ? l.search.replace(/&/g, "~and~") : "";
       var query = "?p=/" + path + search + l.hash;
 
