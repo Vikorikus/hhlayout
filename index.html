@@ -7,24 +7,18 @@
     <title>hh-clone</title>
 
     <script type="text/javascript">
+      // Выполняем только на GitHub Pages
       if (window.location.hostname === "vikorikus.github.io") {
         (function (l) {
-          if (l.search[1] === "p") {
+          // Обрабатываем только специальные URL вида ?p=/...
+          if (l.search.startsWith("?p=")) {
             var decoded = l.search
-              .slice(3)
-              .split("&")
-              .map(function (s) {
-                return s.replace(/~and~/g, "&");
-              })
-              .join("?");
+              .slice(3) // убираем "?p="
+              .replace(/~and~/g, "&");
 
-            window.history.replaceState(
-              null,
-              null,
-              l.pathname +
-                (decoded.startsWith("/") ? decoded.slice(1) : decoded) +
-                l.hash,
-            );
+            // decoded уже содержит корректный путь, например:
+            // /hhappclone/vacancies?page=2
+            window.history.replaceState(null, null, decoded + l.hash);
           }
         })(window.location);
       }
