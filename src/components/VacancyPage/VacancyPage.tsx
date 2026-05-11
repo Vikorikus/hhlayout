@@ -13,8 +13,14 @@ import {
   Anchor,
   Loader,
   Center,
+  Divider,
 } from "@mantine/core";
-import { IconChevronLeft, IconExternalLink } from "@tabler/icons-react";
+import {
+  IconChevronLeft,
+  IconExternalLink,
+  IconMapPin,
+  IconBriefcase,
+} from "@tabler/icons-react";
 import { fetchVacancyById } from "../Store/Slices/vacancySlice";
 import type { RootState, AppDispatch } from "../Store/store";
 
@@ -30,12 +36,14 @@ export const VacancyPage = () => {
     if (!vacancy && id) {
       dispatch(fetchVacancyById(id));
     }
+
+    window.scrollTo(0, 0);
   }, [dispatch, id, vacancy]);
 
   if (loading && !vacancy) {
     return (
-      <Center style={{ height: "50vh" }}>
-        <Loader size="xl" />
+      <Center style={{ height: "70vh" }}>
+        <Loader size="xl" color="indigo" />
       </Center>
     );
   }
@@ -45,10 +53,15 @@ export const VacancyPage = () => {
       <Container size="md" py="xl">
         <Stack align="center" gap="md">
           <Text size="lg" fw={500}>
-            Вакансия не найдена. Попробуйте вернуться к списку.
+            Вакансия не найдена. Возможно, она была удалена.
           </Text>
-          <Button component={Link} to="/" variant="light">
-            Назад к поиску
+          <Button
+            component={Link}
+            to="/vacancies/moscow"
+            variant="light"
+            color="indigo"
+          >
+            Вернуться к списку
           </Button>
         </Stack>
       </Container>
@@ -59,7 +72,7 @@ export const VacancyPage = () => {
     <Container size="md" py="xl">
       <Anchor
         component={Link}
-        to="/"
+        to="/vacancies/moscow"
         size="sm"
         c="dimmed"
         mb="md"
@@ -71,41 +84,49 @@ export const VacancyPage = () => {
       <Stack gap="lg">
         <Paper withBorder p="xl" radius="md" shadow="sm">
           <Stack gap="xs">
-            <Title order={2} c="blue.7">
+            <Title order={2} c="indigo.7">
               {vacancy.name}
             </Title>
 
             <Group gap="xs">
-              <Text fw={700} size="lg">
+              <Text fw={700} size="xl">
                 {vacancy.salary
-                  ? `от ${vacancy.salary.from} до ${vacancy.salary.to} ${vacancy.salary.currency}`
+                  ? `${vacancy.salary.from?.toLocaleString() || 0} – ${vacancy.salary.to?.toLocaleString() || 0} ${vacancy.salary.currency}`
                   : "Зарплата не указана"}
               </Text>
-              <Text c="dimmed">Опыт 1-3 года</Text>
             </Group>
 
-            <Text size="sm" mt="sm">
+            <Group gap="sm" mt="xs">
+              <Group gap={4} c="dimmed">
+                <IconBriefcase size={16} />
+                <Text size="sm">
+                  {vacancy.experience?.name || "Опыт не указан"}
+                </Text>
+              </Group>
+              <Group gap={4} c="dimmed">
+                <IconMapPin size={16} />
+                <Text size="sm">{vacancy.area?.name}</Text>
+              </Group>
+            </Group>
+
+            <Text fw={500} mt="sm">
               {vacancy.employer?.name}
             </Text>
 
-            <Group gap="xs" mt={5}>
-              <Badge color="blue" variant="light" radius="sm">
-                можно удаленно
-              </Badge>
-              <Text size="sm" c="dimmed">
-                {vacancy.area?.name}
-              </Text>
-            </Group>
+            <Badge color="indigo" variant="light" radius="sm" mt={5}>
+              {vacancy.schedule?.name || "полный день"}
+            </Badge>
 
             <Button
               component="a"
-              href={vacancy.alternate_url}
+              href={vacancy.alternate_url || "https://hh.ru"}
               target="_blank"
-              mt="lg"
+              mt="xl"
               color="dark"
               radius="md"
+              size="md"
               style={{ alignSelf: "flex-start" }}
-              rightSection={<IconExternalLink size={16} />}
+              rightSection={<IconExternalLink size={18} />}
             >
               Откликнуться на hh.ru
             </Button>
@@ -117,19 +138,19 @@ export const VacancyPage = () => {
             Описание вакансии
           </Title>
 
+          <Divider mb="lg" />
+
           <Stack gap="md">
             <section>
-              <Text fw={600} mb={5}>
-                Обязанности и требования:
-              </Text>
-
               <Text
-                size="sm"
-                style={{ lineHeight: 1.6 }}
+                size="md"
+                style={{ lineHeight: 1.7 }}
                 dangerouslySetInnerHTML={{
                   __html: `
-                    ${vacancy.snippet?.responsibility || ""} <br/><br/> 
-                    ${vacancy.snippet?.requirement || ""}
+                    <p style="margin-bottom: 8px;"><strong>Обязанности и требования:</strong></p>
+                    ${vacancy.snippet?.responsibility || "Описание обязанностей отсутствует."}
+                    <br/><br/>
+                    ${vacancy.snippet?.requirement || "Требования не указаны."}
                   `,
                 }}
               />

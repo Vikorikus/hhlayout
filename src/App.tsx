@@ -12,7 +12,7 @@ import { VacancyList } from "./components/VacancyList/VacancyList";
 import { SearchBar } from "./components/SearchBar/SearchBar";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { VacancyPage } from "./components/VacancyPage/VacancyPage";
-import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage"; // Импортируем кота
+import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage";
 
 const theme = createTheme({
   primaryColor: "indigo",
@@ -41,13 +41,11 @@ export default function App() {
 
         <Container size="xl" py="xl">
           <Routes>
-            {/* 1. Главная страница просто перекидывает на Москву */}
             <Route
               path="/"
               element={<Navigate to="/vacancies/moscow" replace />}
             />
 
-            {/* 2. Маршрут для списка вакансий с параметром города */}
             <Route
               path="vacancies/:city"
               element={
@@ -67,19 +65,13 @@ export default function App() {
               }
             />
 
-            {/* 3. Если зашли просто на /vacancies без города — кидаем на москву */}
             <Route
               path="vacancies"
               element={<Navigate to="/vacancies/moscow" replace />}
             />
 
-            {/* 4. Страница конкретной вакансии. 
-               Важно: путь теперь /vacancy/:id, чтобы не путать с городами, 
-               либо оставить как есть, но тогда этот роут должен быть ВЫШЕ списка городов.
-            */}
             <Route path="vacancy/:id" element={<VacancyPage />} />
 
-            {/* 5. Наша новая 404 страница с гифкой */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Container>
