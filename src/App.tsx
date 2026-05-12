@@ -6,13 +6,15 @@ import {
   Stack,
 } from "@mantine/core";
 import "@mantine/core/styles.css";
-import { Header } from "./components/Header/Header";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import { Filters } from "./components/Filters/Filters";
 import { VacancyList } from "./components/VacancyList/VacancyList";
 import { SearchBar } from "./components/SearchBar/SearchBar";
-import { Routes, Route, Navigate } from "react-router-dom";
 import { VacancyPage } from "./components/VacancyPage/VacancyPage";
 import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage";
+import { Layout } from "./components/Layout/Layout";
+import { About } from "./components/About/About";
 
 const theme = createTheme({
   primaryColor: "indigo",
@@ -36,46 +38,41 @@ const theme = createTheme({
 export default function App() {
   return (
     <MantineProvider theme={theme}>
-      <div style={{ backgroundColor: "#F6F6F7", minHeight: "100vh" }}>
-        <Header />
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/vacancies/moscow" replace />} />
 
-        <Container size="xl" py="xl">
-          <Routes>
-            <Route
-              path="/"
-              element={<Navigate to="/vacancies/moscow" replace />}
-            />
+          <Route
+            path="vacancies/:city"
+            element={
+              <Container size="xl" py="xl">
+                <Stack gap="xl" mb="xl">
+                  <SearchBar />
+                </Stack>
+                <Grid>
+                  <Grid.Col span={{ base: 12, md: 4 }}>
+                    <Filters />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 8 }}>
+                    <VacancyList />
+                  </Grid.Col>
+                </Grid>
+              </Container>
+            }
+          />
 
-            <Route
-              path="vacancies/:city"
-              element={
-                <>
-                  <Stack gap="xl" mb="xl">
-                    <SearchBar />
-                  </Stack>
-                  <Grid>
-                    <Grid.Col span={{ base: 12, md: 4 }}>
-                      <Filters />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 8 }}>
-                      <VacancyList />
-                    </Grid.Col>
-                  </Grid>
-                </>
-              }
-            />
+          <Route
+            path="vacancies"
+            element={<Navigate to="/vacancies/moscow" replace />}
+          />
 
-            <Route
-              path="vacancies"
-              element={<Navigate to="/vacancies/moscow" replace />}
-            />
+          <Route path="vacancy/:id" element={<VacancyPage />} />
 
-            <Route path="vacancy/:id" element={<VacancyPage />} />
+          <Route path="about" element={<About />} />
 
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Container>
-      </div>
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
     </MantineProvider>
   );
 }

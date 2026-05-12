@@ -1,6 +1,6 @@
 import { Container, Group, Text, UnstyledButton } from "@mantine/core";
 import { IconUserCircle } from "@tabler/icons-react";
-import { Link } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import classes from "./Header.module.scss";
 
 export const Header = () => {
@@ -24,27 +24,46 @@ export const Header = () => {
           </UnstyledButton>
 
           <Group gap="xl">
-            <UnstyledButton
-              component={Link}
+            <NavLink
               to="/vacancies"
-              className={classes.activeLink}
+              className={({ isActive }) =>
+                isActive
+                  ? `${classes.link} ${classes.activeLink}`
+                  : classes.link
+              }
+              style={{ textDecoration: "none" }}
             >
-              <Group gap={6}>
-                <Text fw={600} size="sm">
-                  Вакансии FE
-                </Text>
-                <div className={classes.dot} />
-              </Group>
-            </UnstyledButton>
+              {({ isActive }) => (
+                <Group gap={6}>
+                  <Text fw={600} size="sm">
+                    Вакансии FE
+                  </Text>
 
-            <UnstyledButton className={classes.link}>
-              <Group gap={6}>
-                <IconUserCircle size={18} stroke={1.5} />
-                <Text fw={600} size="sm">
-                  Обо мне
-                </Text>
-              </Group>
-            </UnstyledButton>
+                  {isActive && <div className={classes.dot} />}
+                </Group>
+              )}
+            </NavLink>
+
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                isActive
+                  ? `${classes.link} ${classes.activeLink}`
+                  : classes.link
+              }
+              style={{ textDecoration: "none" }}
+            >
+              {({ isActive }) => (
+                <Group gap={6}>
+                  <IconUserCircle size={18} stroke={1.5} />
+                  <Text fw={600} size="sm">
+                    Обо мне
+                  </Text>
+
+                  {isActive && <div className={classes.dot} />}
+                </Group>
+              )}
+            </NavLink>
           </Group>
 
           <div style={{ width: 120 }} />
